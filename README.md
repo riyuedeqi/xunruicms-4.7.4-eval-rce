@@ -1,5 +1,7 @@
 # XunRuiCMS 4.7.4 — Persistent RCE via eval Injection in Category List-Field Configuration
 
+English | [简体中文](README.zh-CN.md)
+
 - **Product**: XunRuiCMS (迅睿CMS) — vendor: dayrui / Sichuan Xunrui Cloud Software Co., Ltd. — https://www.xunruicms.com
 - **Affected version**: 4.7.4 (latest release, `Version.php` updatetime 2026-10-23). Earlier versions are likely affected but were not individually verified.
 - **Vulnerability type**: CWE-94 Code Injection (eval injection); aggravated by missing CSRF protection on the write endpoint (CWE-352)
@@ -117,7 +119,8 @@ Captured from a fresh official 4.7.4 install (loopback session, host redaction n
 ## Repository layout
 
 ```
-├── README.md                          this advisory
+├── README.md                          this advisory (English)
+├── README.zh-CN.md                    advisory (简体中文)
 ├── LICENSE                            MIT
 ├── poc/
 │   └── xunruicms_category_eval_rce.py end-to-end marker-level PoC (stdlib only)

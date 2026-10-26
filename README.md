@@ -62,6 +62,8 @@ Response: `{"code":1,"msg":"ok"}`. The key is written verbatim into `cache/confi
 ),
 ```
 
+(The CMS input filter inserts a space after commas inside persisted key names — see `evidence/config-category-after.txt`. The expression still evaluates; spaces are legal PHP.)
+
 **Step 2 — trigger** (any visit to the category list page executes the injected expression):
 
 ```
@@ -70,6 +72,25 @@ GET /admin.php?c=category&m=index
 
 Server-side result: `/v1_ok.txt` appears in the web root with content
 `V1_RCE_OK_6654c734ccab8f440ff0825eb443dc7f` (= `md5("v1")`, independently verified) and is retrievable via `GET /v1_ok.txt` (HTTP 200), confirming execution in the web process context.
+
+## PoC script
+
+`poc/xunruicms_category_eval_rce.py` — standard-library-only Python 3 script that reproduces the full chain end-to-end (login → config_add injection → trigger → marker verification over HTTP) and prints a JSON transcript. The password is sent as md5 (the admin UI hashes it in JS first); the script refuses non-loopback targets unless `--i-am-authorized` is passed.
+
+```
+python3 poc/xunruicms_category_eval_rce.py http://127.0.0.1:8080 \
+    --username admin --password 'admin-password'
+# -> {"rce_verified": true, ...}
+```
+
+Run it only against a disposable authorized lab instance: `config_add` overwrites the module category configuration; afterwards delete `cache/config/category.php` and the marker file to restore the install.
+
+## Evidence
+
+Captured from a fresh official 4.7.4 install (loopback session, host redaction not required — `127.0.0.1` only):
+
+- `evidence/repro-1.txt` — JSON transcript of the four steps (login, config_add, trigger, marker verification), ending with `rce_verified: true`;
+- `evidence/config-category-after.txt` — the persisted `cache/config/category.php` showing the injected key stored verbatim (note the input filter's inserted spaces after commas — still valid PHP, still executed).
 
 ## Impact
 
@@ -92,3 +113,15 @@ Server-side result: `/v1_ok.txt` appears in the web root with content
 - **2026-10-27** — public advisory published on GitHub; submitted to VulDB for CVE assignment.
 
 *The vendor has been informed through the CNVD coordination process. This advisory will be updated with the CVE ID once assigned.*
+
+## Repository layout
+
+```
+├── README.md                          this advisory
+├── LICENSE                            MIT
+├── poc/
+│   └── xunruicms_category_eval_rce.py end-to-end marker-level PoC (stdlib only)
+└── evidence/
+    ├── repro-1.txt                    JSON transcript of the full chain (rce_verified: true)
+    └── config-category-after.txt      persisted config file with the injected key
+```
